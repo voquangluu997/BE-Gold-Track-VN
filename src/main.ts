@@ -1,0 +1,66 @@
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import compression from 'compression';  
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser'; 
+import { AppModule } from './app.module';
+import { loggerConfig } from './config/logger/logger.config';
+import { setupSwagger } from './config/swagger.config';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger(loggerConfig),
+  });
+  
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('app.port', 3000);
+  const env = configService.get<string>('app.env', 'development');
+  
+  // Middlewares
+  app.use(helmet());
+  app.use(compression());
+  app.use(cookieParser());
+  
+  // CORS
+  app.enableCors({
+    origin: env === 'development' 
+      ? ['http://localhost:3000', 'http://localhost:8080', 'http://localhost:4200']
+      : ['https://goldtrack.vn'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+  
+  // Global validation pipe
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    forbidNonWhitelisted: true,
+  }));
+  
+  // API prefix
+  app.setGlobalPrefix('api/v1');
+  
+  // Swagger
+  if (env === 'development') {
+    setupSwagger(app);
+  }
+  
+  // Start server
+  await app.listen(port);
+  
+  console.log(`
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🚀 ${configService.get('app.name')} is running!
+  📡 Server: http://localhost:${port}
+  📚 Swagger: http://localhost:${port}/api/docs
+  🌍 Environment: ${env}
+  🏥 Health: http://localhost:${port}/api/v1/health
+  🗄️  Prisma Studio: npx prisma studio
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  `);
+}
+
+bootstrap();
