@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// USER MODEL - Quản lý người dùng
+// ============================================
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String?
+  fullName        String?
+  phoneNumber     String?
+  fcmToken        String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  location        UserLocation?
+  settings        UserSettings?
+  alerts          Alert[]
+  favorites       Favorite[]
+  notificationLogs NotificationLog[]
+  
+  @@map("users")
+}
+
+// ============================================
+// USER LOCATION - Vị trí người dùng
+// ============================================
+model UserLocation {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  latitude        Float
+  longitude       Float
+  city            String
+  district        String?
+  address         String?
+  isActive        Boolean   @default(true)
+  lastUpdated     DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([city])
+  @@index([userId])
+  @@map("user_locations")
+}
+
+// ============================================
+// USER SETTINGS - Cài đặt người dùng
+// ============================================
+model UserSettings {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  locationBased   Boolean   @default(true)
+  priceChange     Boolean   @default(true)
+  dailyDigest     Boolean   @default(true)
+  distanceRadius  Int       @default(10)
+  preferredCities String[]  @default([])
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_settings")
+}
+
+// ============================================
+// GOLD PRICE - Giá vàng
+// ============================================
+model GoldPrice {
+  id              String    @id @default(cuid())
+  brand           String    // SJC, PNJ, DOJI
+  city            String    // Hanoi, HCMC, Danang
+  buyPrice        Float
+  sellPrice       Float
+  type            String    @default("9999") // 9999, 24K, 18K
+  source          String    // 24h.com.vn, sjc.com.vn
+  createdAt       DateTime  @default(now())
+  
+  @@unique([brand, city, type, createdAt])
+  @@index([brand, city, createdAt(sort: Desc)])
+  @@map("gold_prices")
+}
+
+// ============================================
+// EXCHANGE RATE - Tỷ giá ngoại tệ
+// ============================================
+model ExchangeRate {
+  id              String    @id @default(cuid())
+  currency        String    // USD, EUR, JPY
+  buyPrice        Float
+  sellPrice       Float
+  bank            String    // VIETCOMBANK, VIETINBANK
+  createdAt       DateTime  @default(now())
+  
+  @@unique([currency, bank, createdAt])
+  @@index([currency, createdAt(sort: Desc)])
+  @@map("exchange_rates")
+}
+
+// ============================================
+// ALERT - Cảnh báo giá
+// ============================================
+model Alert {
+  id              String    @id @default(cuid())
+  userId          String
+  type            AlertType
+  target          String    // SJC:Hanoi hoặc USD
+  threshold       Float
+  condition       AlertCondition
+  isActive        Boolean   @default(true)
+  triggeredAt     DateTime?
+  createdAt       DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isActive])
+  @@map("alerts")
+}
+
+// ============================================
+// FAVORITE - Yêu thích
+// ============================================
+model Favorite {
+  id              String    @id @default(cuid())
+  userId          String
+  type            String    // GOLD, CURRENCY
+  target          String    // SJC:Hanoi hoặc USD
+  createdAt       DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, type, target])
+  @@map("favorites")
+}
+
+// ============================================
+// NOTIFICATION LOG - Lịch sử thông báo
+// ============================================
+model NotificationLog {
+  id              String    @id @default(cuid())
+  userId          String
+  type            String    // LOCATION_BASED, PRICE_ALERT, DAILY_DIGEST
+  title           String
+  body            String
+  data            Json?
+  isRead          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notification_logs")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+enum AlertType {
+  GOLD
+  CURRENCY
+}
+
+enum AlertCondition {
+  ABOVE
+  BELOW
+}
