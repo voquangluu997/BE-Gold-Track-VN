@@ -96,3 +96,14 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+# Khởi tạo Prisma trong dự án
+npx prisma init
+
+# Command	                          Mục đích
+npx prisma generate	                Generate Prisma Client
+npx prisma migrate dev --name name	Tạo và apply migration
+npx prisma migrate deploy	          Apply migrations (production)
+npx prisma studio	                  Mở GUI để xem database
+npx prisma db seed	                Chạy seed data
+npx prisma format	                  Format schema file

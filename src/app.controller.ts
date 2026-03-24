@@ -1,13 +1,17 @@
 // src/app.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PrismaService } from './prisma/prisma.service';
 import { AppService } from './app.service';
 
+@ApiTags('Health')
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private configService: ConfigService,
+    private prisma: PrismaService,
   ) {}
 
   @Get()
@@ -15,14 +19,24 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('config')
-  getConfig() {
+  @Get('health')
+  @ApiOperation({ summary: 'Health check' })
+  @ApiResponse({ status: 200, description: 'Server is healthy' })
+  async getHealth() {
+    // Kiểm tra kết nối database
+    let dbStatus = 'connected';
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+    } catch (error) {
+      dbStatus = 'disconnected';
+    }
+    
     return {
-      app: this.configService.get('app'),
-      env: {
-        nodeEnv: process.env.NODE_ENV,
-        databaseUrl: process.env.DATABASE_URL ? '***hidden***' : 'not set',
-      },
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: this.configService.get('app.env'),
+      database: dbStatus,
     };
   }
 }

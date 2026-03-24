@@ -1,10 +1,10 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PrismaModule } from './prisma/prisma.module';
 import appConfig from './config/app.config';
 
 @Module({
@@ -16,11 +16,17 @@ import appConfig from './config/app.config';
     }),
     // Rate Limiting
     ThrottlerModule.forRoot({
-      ttl: parseInt(process.env.THROTTLE_TTL, 10) || 60,
-      limit: parseInt(process.env.THROTTLE_LIMIT, 10) || 100,
+      throttlers:[
+        {
+        ttl: parseInt(process.env.THROTTLE_TTL || '100', 10) || 60,
+        limit: parseInt(process.env.THROTTLE_LIMIT || '60', 10) || 100,
+        }
+      ],
+      
     }),
     // Schedule
     ScheduleModule.forRoot(),
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
