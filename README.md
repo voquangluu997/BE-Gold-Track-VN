@@ -107,3 +107,4 @@ npx prisma migrate deploy	          Apply migrations (production)
 npx prisma studio	                  Mở GUI để xem database
 npx prisma db seed	                Chạy seed data
 npx prisma format	                  Format schema file
+#
