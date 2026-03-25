@@ -1,0 +1,26 @@
+# ============================================
+# DOCKER COMPOSE CHÍNH
+# ============================================
+# Sử dụng extends để kết hợp các cấu hình
+
+version: '3.8'
+
+# Mặc định dùng development config
+services:
+  postgres:
+    extends:
+      file: docker-compose.dev.yml
+      service: postgres
+  
+  redis:
+    extends:
+      file: docker-compose.dev.yml
+      service: redis
+  
+  backend:
+    extends:
+      file: docker-compose.dev.yml
+      service: backend
+
+# Override cho production
+# Chạy với: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up

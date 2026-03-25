@@ -107,3 +107,65 @@ npx prisma migrate deploy	          Apply migrations (production)
 npx prisma studio	                  Mở GUI để xem database
 npx prisma db seed	                Chạy seed data
 npx prisma format	                  Format schema file
+
+# Cấp quyền execute cho scripts
+chmod +x scripts/*.sh
+
+# Sử dụng
+./scripts/docker-manage.sh dev      # Start development
+./scripts/docker-manage.sh prod     # Start production
+./scripts/docker-manage.sh stop     # Stop all
+./scripts/docker-manage.sh logs     # View logs
+
+# Development
+docker-compose -f docker-compose.dev.yml up -d
+# -d: Chạy background (detached)
+
+# Development với logs
+docker-compose -f docker-compose.dev.yml up
+
+# Production
+docker-compose -f docker-compose.prod.yml up -d
+
+# Build và start
+docker-compose -f docker-compose.dev.yml up -d --build
+# Dừng containers (giữ volumes)
+docker-compose -f docker-compose.dev.yml down
+
+# Dừng và xóa volumes (mất dữ liệu)
+docker-compose -f docker-compose.dev.yml down -v
+# Tất cả services
+docker-compose -f docker-compose.dev.yml logs -f
+
+# Chỉ backend
+docker-compose -f docker-compose.dev.yml logs -f backend
+
+# Chỉ database
+docker-compose -f docker-compose.dev.yml logs -f postgres
+# Shell trong backend
+docker exec -it goldtrack-backend-dev /bin/sh
+
+# PostgreSQL shell
+docker exec -it goldtrack-postgres-dev psql -U postgres -d goldtrack_dev
+
+# Redis CLI
+docker exec -it goldtrack-redis-dev redis-cli
+# Danh sách containers đang chạy
+docker ps
+
+# Resource usage
+docker stats
+
+# Network inspection
+docker network inspect goldtrack-network
+# Xóa containers không dùng
+docker container prune
+
+# Xóa images không dùng
+docker image prune
+
+# Xóa volumes không dùng
+docker volume prune
+
+# Xóa tất cả
+docker system prune -a --volumes
