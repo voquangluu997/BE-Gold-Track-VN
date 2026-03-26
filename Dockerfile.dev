@@ -1,0 +1,27 @@
+FROM node:22-alpine
+
+RUN apk add --no-cache \
+    bash \
+    curl \
+    postgresql-client \
+    openssl \
+    openssl-dev
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Cài đặt dependencies (bao gồm cả devDependencies)
+RUN npm install
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Copy source code
+COPY . .
+
+EXPOSE 3000 9229
+
+CMD ["npm", "run", "start:dev"]

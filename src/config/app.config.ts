@@ -6,7 +6,7 @@ import { registerAs } from '@nestjs/config';
  */
 export default registerAs('app', () => ({
   env: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.APP_PORT|| '3000', 10) || 3000,
+  port: parseInt(process.env.APP_PORT|| '8001', 10),
   name: process.env.APP_NAME || 'GoldTrack',
-  url: process.env.APP_URL || 'http://localhost:3000',
+  url: process.env.APP_URL || 'http://localhost:8001',
 }));

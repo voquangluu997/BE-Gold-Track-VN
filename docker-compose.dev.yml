@@ -1,0 +1,140 @@
+# ============================================
+# DOCKER COMPOSE CHO MÔI TRƯỜNG DEVELOPMENT
+# ============================================
+
+services:
+  # ============================================
+  # POSTGRES DATABASE
+  # ============================================
+  postgres:
+    image: postgres:14-alpine
+    container_name: goldtrack-postgres-dev
+    
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-goldtrack_dev}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    
+    ports:
+      - "5432:5432"
+    
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    
+    networks:
+      - goldtrack-network
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+    restart: unless-stopped
+
+  # ============================================
+  # REDIS CACHE
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: goldtrack-redis-dev
+    
+    command: redis-server --appendonly yes
+    
+    ports:
+      - "6379:6379"
+    
+    volumes:
+      - redis_dev_data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    
+    networks:
+      - goldtrack-network
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+    restart: unless-stopped
+
+  # ============================================
+  # BACKEND APPLICATION
+  # ============================================
+  backend:
+    build:
+      context: .  # Context là thư mục hiện tại (không phải ./backend)
+      dockerfile: Dockerfile.dev  # Dockerfile ở thư mục gốc
+    container_name: goldtrack-backend-dev
+    
+    environment:
+      NODE_ENV: development
+      APP_PORT: 3000
+      APP_NAME: GoldTrack
+      APP_URL: http://localhost:8001
+      
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-goldtrack_dev}?schema=public
+      
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      
+      THROTTLE_TTL: 60
+      THROTTLE_LIMIT: 100
+      LOG_LEVEL: debug
+    
+    ports:
+      - "8001:3000"
+      - "9229:9229"
+    
+    volumes:
+      - .:/app  # Mount toàn bộ thư mục hiện tại
+      - /app/node_modules  # Volume ẩn để giữ node_modules trong container
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    networks:
+      - goldtrack-network
+    
+    restart: unless-stopped
+
+  # ============================================
+  # NGINX REVERSE PROXY (Optional)
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: goldtrack-nginx-dev
+    
+    ports:
+      - "8080:80"
+      - "8443:443"
+    
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - ./static:/usr/share/nginx/html/static:ro
+    
+    depends_on:
+      - backend
+    
+    networks:
+      - goldtrack-network
+    
+    restart: unless-stopped
+
+networks:
+  goldtrack-network:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local

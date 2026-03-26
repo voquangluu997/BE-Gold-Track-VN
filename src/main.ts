@@ -1,10 +1,11 @@
+// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import compression from 'compression';  
+import compression from 'compression';
 import helmet from 'helmet';
-import cookieParser from 'cookie-parser'; 
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { loggerConfig } from './config/logger/logger.config';
 import { setupSwagger } from './config/swagger.config';
@@ -15,7 +16,7 @@ async function bootstrap() {
   });
   
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('app.port', 3000);
+  const port = configService.get<number>('app.port', 8001);
   const env = configService.get<string>('app.env', 'development');
   
   // Middlewares
@@ -26,7 +27,7 @@ async function bootstrap() {
   // CORS
   app.enableCors({
     origin: env === 'development' 
-      ? ['http://localhost:3000', 'http://localhost:8080', 'http://localhost:4200']
+      ? ['http://localhost:8001', 'http://localhost:8080', 'http://localhost:4200']
       : ['https://goldtrack.vn'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -43,7 +44,7 @@ async function bootstrap() {
   // API prefix
   app.setGlobalPrefix('api/v1');
   
-  // Swagger
+  // Swagger (chỉ development)
   if (env === 'development') {
     setupSwagger(app);
   }
@@ -52,14 +53,14 @@ async function bootstrap() {
   await app.listen(port);
   
   console.log(`
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ════════════════════════════════════════════════════════════════
   🚀 ${configService.get('app.name')} is running!
   📡 Server: http://localhost:${port}
   📚 Swagger: http://localhost:${port}/api/docs
   🌍 Environment: ${env}
   🏥 Health: http://localhost:${port}/api/v1/health
   🗄️  Prisma Studio: npx prisma studio
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ════════════════════════════════════════════════════════════════
   `);
 }
 
