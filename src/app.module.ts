@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import appConfig from './config/app.config';
+import { CrawlerModule } from './modules/crawler/crawler.module';
 
 @Module({
   imports: [
@@ -18,8 +19,8 @@ import appConfig from './config/app.config';
     ThrottlerModule.forRoot({
       throttlers:[
         {
-        ttl: parseInt(process.env.THROTTLE_TTL || '100', 10) || 60,
-        limit: parseInt(process.env.THROTTLE_LIMIT || '60', 10) || 100,
+        ttl: parseInt(process.env.THROTTLE_TTL || '60', 10),
+        limit: parseInt(process.env.THROTTLE_LIMIT || '100', 10),
         }
       ],
       
@@ -27,6 +28,7 @@ import appConfig from './config/app.config';
     // Schedule
     ScheduleModule.forRoot(),
     PrismaModule,
+    CrawlerModule
   ],
   controllers: [AppController],
   providers: [AppService],

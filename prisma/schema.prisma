@@ -76,16 +76,19 @@ model UserSettings {
 // ============================================
 model GoldPrice {
   id              String    @id @default(cuid())
-  brand           String    // SJC, PNJ, DOJI
-  city            String    // Hanoi, HCMC, Danang
+  brand           String    
+  city            String    
   buyPrice        Float
   sellPrice       Float
-  type            String    @default("9999") // 9999, 24K, 18K
-  source          String    // 24h.com.vn, sjc.com.vn
+  type            String    @default("9999") 
+  source          String    
   createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt   
+
   
   @@unique([brand, city, type, createdAt])
   @@index([brand, city, createdAt(sort: Desc)])
+  @@index([createdAt])
   @@map("gold_prices")
 }
 
@@ -94,11 +97,13 @@ model GoldPrice {
 // ============================================
 model ExchangeRate {
   id              String    @id @default(cuid())
-  currency        String    // USD, EUR, JPY
+  currency        String    
   buyPrice        Float
   sellPrice       Float
-  bank            String    // VIETCOMBANK, VIETINBANK
+  bank            String    
+  source          String    
   createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt   
   
   @@unique([currency, bank, createdAt])
   @@index([currency, createdAt(sort: Desc)])
@@ -112,7 +117,7 @@ model Alert {
   id              String    @id @default(cuid())
   userId          String
   type            AlertType
-  target          String    // SJC:Hanoi hoặc USD
+  target          String    
   threshold       Float
   condition       AlertCondition
   isActive        Boolean   @default(true)
