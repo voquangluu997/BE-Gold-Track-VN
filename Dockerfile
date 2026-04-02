@@ -1,4 +1,3 @@
-# Dockerfile
 FROM node:22-alpine AS builder
 
 RUN apk add --no-cache \
@@ -9,15 +8,21 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm install
+RUN npm ci
 RUN npx prisma generate
 
+# Copy source code
 COPY . .
 
+# Build ứng dụng
 RUN npm run build
+
+# Kiểm tra dist đã được tạo
+RUN ls -la dist/
 
 FROM node:22-alpine
 
@@ -28,13 +33,20 @@ RUN apk add --no-cache postgresql-client openssl
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm install --omit=dev
+# Chỉ cài production dependencies
+RUN npm ci --omit=dev
+
+# Generate Prisma Client
 RUN npx prisma generate
 
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+
+# Kiểm tra dist đã được copy
+RUN ls -la dist/
 
 USER nodejs
 
