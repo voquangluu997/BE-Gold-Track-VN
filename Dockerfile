@@ -1,5 +1,4 @@
-# Stage 1: Builder
-FROM node:22-alpine AS builder
+npm installFROM node:22-alpine AS builder
 
 RUN apk add --no-cache \
     python3 \
@@ -13,8 +12,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN npm ci
+# Cài đặt dependencies (bao gồm devDependencies cho build)
+RUN npm install
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -24,9 +23,6 @@ COPY . .
 
 # Build ứng dụng
 RUN npm run build
-
-# Prune dev dependencies
-RUN npm prune --production
 
 # Stage 2: Production
 FROM node:22-alpine
@@ -38,11 +34,18 @@ RUN apk add --no-cache postgresql-client openssl
 
 WORKDIR /app
 
-# Copy từ builder stage
+# Copy package files cho production
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Chỉ cài production dependencies
+RUN npm install --omit=dev
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Copy built application
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
-COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 
 USER nodejs
 

@@ -94,7 +94,7 @@ export class CrawlerWebgiaService {
   }
 
   /**
-   * Parse bảng giá vàng - Chỉ lấy các dòng có số thực
+   * Parse bảng giá - Chỉ lấy các dòng có số thực
    */
   private parseDomesticGoldPrices($: cheerio.CheerioAPI): GoldPriceData[] {
     const prices: GoldPriceData[] = [];
@@ -112,7 +112,7 @@ export class CrawlerWebgiaService {
 
     let currentCity = '';
     const rows = targetTable.find('tbody tr');
-
+    
     for (let i = 0; i < rows.length; i++) {
       const row = rows.eq(i);
       const cells = row.find('td');
