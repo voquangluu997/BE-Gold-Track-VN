@@ -54,12 +54,10 @@ async function bootstrap() {
   await app.listen(port);
   
   console.log(`
-  ════════════════════════════════════════════════════════════════
   🚀 ${configService.get('app.name')} is running!
-  📡 Server: ${appUrl}
-  📚 Swagger: ${appUrl}/api/docs
+  📡 Server: http://0.0.0.0:${port}
   🌍 Environment: ${env}
-  🏥 Health: ${appUrl}/api/v1/health
+  🏥 Health: http://0.0.0.0:${port}/health
   🗄️  Prisma Studio: npx prisma studio
   ════════════════════════════════════════════════════════════════
   `);

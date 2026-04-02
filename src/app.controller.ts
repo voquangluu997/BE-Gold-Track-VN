@@ -19,7 +19,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('health')
+  @Get('/health')
   @ApiOperation({ summary: 'Health check' })
   @ApiResponse({ status: 200, description: 'Server is healthy' })
   async getHealth() {
