@@ -1,0 +1,24 @@
+# render.yaml
+services:
+  - type: web
+    name: goldtrack-backend
+    runtime: node
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && node dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: goldtrack-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+databases:
+  - name: goldtrack-db
+    databaseName: goldtrack_prod
+    user: goldtrack_user
+    plan: free

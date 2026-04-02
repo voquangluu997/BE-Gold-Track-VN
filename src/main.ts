@@ -18,6 +18,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port', 8001);
   const env = configService.get<string>('app.env', 'development');
+  const appUrl = process.env.APP_URL;
   
   // Middlewares
   app.use(helmet());
@@ -55,10 +56,10 @@ async function bootstrap() {
   console.log(`
   ════════════════════════════════════════════════════════════════
   🚀 ${configService.get('app.name')} is running!
-  📡 Server: http://localhost:${port}
-  📚 Swagger: http://localhost:${port}/api/docs
+  📡 Server: ${appUrl}
+  📚 Swagger: ${appUrl}/api/docs
   🌍 Environment: ${env}
-  🏥 Health: http://localhost:${port}/api/v1/health
+  🏥 Health: ${appUrl}/api/v1/health
   🗄️  Prisma Studio: npx prisma studio
   ════════════════════════════════════════════════════════════════
   `);
