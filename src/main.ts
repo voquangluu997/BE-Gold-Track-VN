@@ -16,7 +16,7 @@ async function bootstrap() {
   });
   
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('app.port', 8001);
+  const port = process.env.APP_PORT || '8081';
   const env = configService.get<string>('app.env', 'development');
   const appUrl = process.env.APP_URL;
   
