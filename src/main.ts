@@ -43,7 +43,9 @@ async function bootstrap() {
   }));
   
   // API prefix
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['health'],
+  });
   
   // Swagger (chỉ development)
   if (env === 'development') {

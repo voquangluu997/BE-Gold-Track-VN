@@ -14,12 +14,8 @@ export class AppController {
     private prisma: PrismaService,
   ) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
-
-  @Get('/health')
+  
+  @Get('health')
   @ApiOperation({ summary: 'Health check' })
   @ApiResponse({ status: 200, description: 'Server is healthy' })
   async getHealth() {
