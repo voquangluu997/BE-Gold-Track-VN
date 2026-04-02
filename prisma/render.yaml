@@ -4,7 +4,7 @@ services:
     name: goldtrack-backend
     runtime: node
     buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npx prisma migrate deploy && node dist/main
+    startCommand: node dist/main
     envVars:
       - key: NODE_ENV
         value: production
@@ -12,13 +12,14 @@ services:
         fromDatabase:
           name: goldtrack-db
           property: connectionString
+      # Redis Configuration
+      - key: REDIS_HOST
+        value: xxxxx.upstash.io
+      - key: REDIS_PORT
+        value: 6379
+      - key: REDIS_PASSWORD
+        value: your_password
+      - key: REDIS_TLS
+        value: 1
       - key: JWT_SECRET
         generateValue: true
-      - key: JWT_REFRESH_SECRET
-        generateValue: true
-
-databases:
-  - name: goldtrack-db
-    databaseName: goldtrack_prod
-    user: goldtrack_user
-    plan: free
