@@ -26,7 +26,7 @@ export function setupSwagger(app: INestApplication): void {
       },
       'JWT-auth',
     )
-    .addServer('http://localhost:8001', 'Development')
+    .addServer(process.env.APP_URL || 'http://localhost://10000', 'Development')
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
