@@ -26,17 +26,7 @@ async function bootstrap() {
   app.use(cookieParser());
   
   app.enableCors({
-    origin: [
-      'http://localhost:10000',           
-      'http://localhost:3000',           
-      'http://localhost:8001',    
-      'http://localhost:8080',    
-      'http://10.0.2.2:8001',            
-      'https://be-gold-track-vn.onrender.com', 
-      /\.onrender\.com$/,                 
-      /\.goldtrack\.vn$/,                 
-
-    ],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
