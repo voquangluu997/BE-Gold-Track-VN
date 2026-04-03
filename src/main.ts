@@ -25,15 +25,33 @@ async function bootstrap() {
   app.use(compression());
   app.use(cookieParser());
   
-  // CORS
   app.enableCors({
-    origin: env === 'development' 
-      ? ['http://localhost:8001', 'http://localhost:8080', 'http://localhost:4200']
-      : ['https://goldtrack.vn'],
+    origin: [
+      'http://localhost:10000',           
+      'http://localhost:3000',           
+      'http://localhost:8001',    
+      'http://localhost:8080',    
+      'http://10.0.2.2:8001',            
+      'https://be-gold-track-vn.onrender.com', 
+      /\.onrender\.com$/,                 
+      /\.goldtrack\.vn$/,                 
+
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+    ],
+    // Các headers được expose ra client
+    exposedHeaders: ['Content-Disposition'],
+    // Thời gian cache preflight request (giây)
+    maxAge: 3600,
   });
+  
   
   // Global validation pipe
   app.useGlobalPipes(new ValidationPipe({
